@@ -15,23 +15,22 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# --- Model Loading ---
-# Load DeepSeek-OCR model and tokenizer ONCE globally
-MODEL_NAME = "deepseek-ai/DeepSeek-OCR"
+import torch
+from transformers import AutoModel, AutoTokenizer
 
+MODEL_NAME = 'deepseek-ai/DeepSeek-OCR'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
 model = AutoModel.from_pretrained(
     MODEL_NAME,
-    trust_remote_code=True,
     _attn_implementation='flash_attention_2',
-    use_safetensors=True
-).eval().to("cuda", dtype=torch.bfloat16)
+    trust_remote_code=True,
+    use_safetensors=True,
+    torch_dtype=torch.bfloat16
+).eval().cuda()
 
-tokenizer = AutoTokenizer.from_pretrained(
-    MODEL_NAME,
-    trust_remote_code=True
-)
-
-print("DeepSeek-OCR model loaded on GPU")
+print(f'DeepSeek-OCR loaded on {device}')
 
 # --- Celery App Configuration ---
 app = Celery('tasks')
