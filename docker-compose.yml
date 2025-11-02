@@ -1,0 +1,107 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pdf_processor_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  broker:
+    image: redis:7-alpine
+    container_name: pdf_processor_broker
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  web:
+    build: ./web
+    container_name: pdf_processor_web
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+    volumes:
+      - app-data:/app/data
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  worker:
+    build: ./worker
+    container_name: pdf_processor_worker
+    depends_on:
+      - db
+      - broker
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    volumes:
+      - app-data:/app/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  scheduler:
+    build: ./scheduler
+    container_name: pdf_processor_scheduler
+    command: celery -A tasks beat --loglevel=info
+    depends_on:
+      - broker
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=redis://broker:6379/0
+      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+    networks:
+      - backend
+    restart: unless-stopped
+
+  flower:
+    image: mher/flower:latest
+    container_name: pdf_processor_flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://broker:6379/0
+    networks:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  app-data:
+
+networks:
+  frontend:
+  backend:

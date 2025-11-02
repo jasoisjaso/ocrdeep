@@ -1,0 +1,22 @@
+document_type: "pod"
+prompt_template: |
+  Analyze this Proof of Delivery document. Extract the following fields as a JSON object.
+  
+  {
+    "customerName": "...",
+    "deliveryAddress": "...",
+    "podNumber": "...",
+    "deliveryDate": "..."
+  }
+
+required_fields:
+  - podNumber
+
+output_folders:
+  - "PODs"
+  - "_FAILED"
+
+sorting_logic:
+  field: "podNumber"
+  rules:
+    - default: "PODs"

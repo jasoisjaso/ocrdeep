@@ -1,0 +1,17 @@
+transformers==4.46.3
+tokenizers==0.20.3
+einops
+addict
+easydict
+accelerate
+pillow>=10.0
+pymupdf
+celery>=5.3
+redis>=5.0
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+numpy
+pandas>=2.0
+openpyxl>=3.1
+pyyaml>=6.0
+tenacity>=8.2

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Job Status for #{{ job.id }}</h2>
+    <p><strong>Filename:</strong> {{ job.filename }}</p>
+    <p><strong>Status:</strong> <span id="job-status">{{ job.status.value }}</span></p>
+    <p><strong>Created At:</strong> {{ job.created_at }}</p>
+    <div id="download-link"></div>
+    <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+
+<script>
+    function pollJobStatus() {
+        fetch(`/api/job_status/{{ job.id }}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('job-status').innerText = data.status;
+                if (data.status === 'COMPLETE') {
+                    document.getElementById('download-link').innerHTML = 
+                        `<a href="/download/{{ job.id }}" class="btn btn-success">Download Output</a>`;
+                    clearInterval(pollingInterval);
+                } else if (data.status === 'FAILED') {
+                    document.getElementById('error-message').innerText = data.error_message;
+                    document.getElementById('error-message').style.display = 'block';
+                    clearInterval(pollingInterval);
+                }
+            });
+    }
+
+    const pollingInterval = setInterval(pollJobStatus, 5000);
+    pollJobStatus(); // Initial call
+</script>
+{% endblock %}

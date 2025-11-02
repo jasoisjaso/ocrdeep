@@ -1,0 +1,35 @@
+document_type: "absence_form"
+prompt_template: |
+  Analyze this employee absence form. Extract the following fields as a JSON object.
+  If a field is empty, return an empty string.
+  If a "Reason" checkbox is marked, return that reason.
+  
+  {
+    "firstName": "...",
+    "lastName": "...",
+    "scanNumber": "...",
+    "position": "...",
+    "reason": "...",
+    "date": "..."
+  }
+
+required_fields:
+  - scanNumber
+  
+output_folders:
+  - "Primary Connect"
+  - "Adecco"
+  - "Chandler"
+  - "Misc"
+  - "_FAILED"
+
+sorting_logic:
+  field: "scanNumber"
+  rules:
+    - pattern: "^PC"
+      folder: "Primary Connect"
+    - pattern: "^AD"
+      folder: "Adecco"
+    - pattern: "^CH"
+      folder: "Chandler"
+    - default: "Misc"

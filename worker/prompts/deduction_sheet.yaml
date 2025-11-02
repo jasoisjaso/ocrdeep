@@ -1,0 +1,23 @@
+document_type: "deduction_sheet"
+prompt_template: |
+  Analyze this uniform deduction sheet. Extract the following fields as a JSON object.
+  
+  {
+    "employeeName": "...",
+    "employeeId": "...",
+    "deductionAmount": "...",
+    "date": "..."
+  }
+
+required_fields:
+  - employeeId
+  - deductionAmount
+
+output_folders:
+  - "Deductions"
+  - "_FAILED"
+
+sorting_logic:
+  field: "employeeId"
+  rules:
+    - default: "Deductions"
