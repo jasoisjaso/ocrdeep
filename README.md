@@ -1,72 +1,50 @@
-# DeepSeek-OCR PDF Processor (Simplified PoC)
+# Streamlit OCR Document Processing Application
 
-## High-Level Goal
+This application provides a web-based interface for OCR document processing, featuring a deduction form splitter and an invoice extractor. It is built with Streamlit and utilizes a Hugging Face transformer model for OCR, all containerized with Docker for easy deployment.
 
-This project provides a simplified, proof-of-concept setup for a powerful, scalable, and automated system for extracting structured data from various types of PDF documents. It is optimized for a headless Ubuntu server with an NVIDIA GPU.
+## Installation and Setup
 
-## How It Works
-
-1.  **Upload:** A user uploads a PDF through a simple web interface.
-2.  **Process:** The application sends the PDF to a background Celery worker.
-3.  **Extract:** The worker, running on a GPU, uses the DeepSeek-OCR model to analyze each page and extract the requested data based on a prompt.
-4.  **Organize & Report:** The extracted data is used to organize the pages, and a summary report is generated.
-5.  **Download:** The user can download a ZIP file with the processed files and the report.
-
-## System Architecture
-
-- **`web`**: A Flask web application for file uploads and job monitoring.
-- **`worker`**: A Celery worker for GPU-intensive OCR processing.
-- **`scheduler`**: A Celery beat scheduler for periodic tasks.
-- **`db`**: A PostgreSQL database for storing job information.
-- **`broker`**: A Redis instance for message passing between the web and worker services.
-- **`flower`**: A web-based tool for monitoring the Celery cluster.
-
-## Getting Started on a Headless Ubuntu Server
-
-This guide assumes you have a headless Ubuntu server with Docker, Docker Compose, and the NVIDIA driver stack already installed.
+This guide assumes you have Docker and Docker Compose installed on your system.
 
 ### 1. Clone the Repository
 
-```bash
-git clone <your-repo-url>
-cd <your-repo-name>
-```
-
-### 2. Configure the Environment
-
-Create a `.env` file from the example provided. For this simplified setup, you only need to provide basic database credentials. **No Redis password is required.**
+If you haven't already, clone the repository to your local machine:
 
 ```bash
-cp .env.example .env
-# Edit .env to set your POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB
-# For example:
-# POSTGRES_USER=myuser
-# POSTGRES_PASSWORD=mypassword
-# POSTGRES_DB=mydatabase
+git clone https://github.com/jasoisjaso/ocrdeep.git
+cd ocrdeep
 ```
 
-### 3. Build and Run the Application
+### 2. Build the Docker Image
+
+Navigate to the root directory of the cloned repository (where `docker-compose.yml` and `Dockerfile` are located) and build the Docker image:
 
 ```bash
-docker-compose up -d --build
+docker-compose build
 ```
 
-### 4. Access the Services
+This process may take some time as it downloads the necessary base images and installs all Python dependencies, including the OCR model.
 
-- **Web Application**: `http://<your-server-ip>:5000`
-- **Flower Dashboard**: `http://<your-server-ip>:5555`
+### 3. Run the Docker Containers
 
-### 5. Create an Initial User
-
-To log in to the web application, you need to create a user account.
+Once the image is built, you can start the application containers:
 
 ```bash
-docker-compose exec web flask create-user <username> <password>
+docker-compose up
 ```
 
-Now you can log in and start processing documents.
+If you want to run it in detached mode (in the background), use:
 
-## Project Customization
+```bash
+docker-compose up -d
+```
 
-- **Adding New Document Types:** See `ADDING_DOCUMENT_TYPES.md`.
-- **Testing and Debugging OCR:** See `OCR_DEBUGGING.md`.
+### 4. Access the Application
+
+Open your web browser and navigate to the following address:
+
+```
+http://localhost:8501
+```
+
+The Streamlit OCR application should now be running and accessible.
