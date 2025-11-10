@@ -47,15 +47,12 @@ If you are cloning an existing repository that contains this project, follow the
 
 After setting up your repository (either by creating a new one and pushing, or by cloning an existing one), proceed with these steps to run the application:
 
-1.  **Build the Docker Image**
-    Navigate to the root directory of the project (where `docker-compose.yml` and `Dockerfile` are located) and build the Docker image:
+1.  **Pull and Run the Docker Containers**
+    First, ensure you are logged into GitHub Container Registry (GHCR) if your repository is private:
     ```bash
-    docker-compose build
+    echo YOUR_GH_TOKEN | docker login ghcr.io -u YOUR_GH_USERNAME --password-stdin
     ```
-    This process may take some time as it downloads the necessary base images and installs all Python dependencies, including the OCR model.
-
-2.  **Run the Docker Containers**
-    Once the image is built, you can start the application containers:
+    Then, navigate to the root directory of the project (where `docker-compose.yml` is located) and start the application containers. Docker Compose will automatically pull the specified image from GHCR:
     ```bash
     docker-compose up
     ```
@@ -64,7 +61,7 @@ After setting up your repository (either by creating a new one and pushing, or b
     docker-compose up -d
     ```
 
-3.  **Access the Application**
+2.  **Access the Application**
     Open your web browser and navigate to the following address:
     ```
     http://localhost:8501
